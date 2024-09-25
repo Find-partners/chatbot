@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-user Chatbot with Socket.IO</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { display: flex; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        #chat-container { flex-grow: 1; display: flex; flex-direction: column; }
+        #chat { flex-grow: 1; overflow-y: scroll; margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; }
+        #chat p { margin: 5px 0; padding: 5px; border-radius: 5px; }
+        .user-message { background-color: #e6f2ff; text-align: right; }
+        .bot-message { background-color: #f0f0f0; }
+        .system-message { background-color: #ffe6e6; text-align: center; font-style: italic; }
+        #user-list { width: 200px; margin-left: 20px; border: 1px solid #ccc; padding: 10px; }
+        #chat-form { display: flex; }
+        #chat-input { flex-grow: 1; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat"></div>
+        <form id="chat-form">
+            <input id="chat-input" type="text" autocomplete="off" placeholder="Type a message..." />
+            <button>Send</button>
+        </form>
+    </div>
+    <div id="user-list">
+        <h3>Online Users</h3>
+        <ul id="users"></ul>
+    </div>
+
+    <script>
+        const socket = io();
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatDiv = document.getElementById('chat');
+        const userList = document.getElementById('users');
+        let username;
+
+        // Prompt for username
+        while (!username) {
+            username = prompt("Please enter your username:");
+        }
+        socket.emit('set username', username);
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (chatInput.value) {
+                socket.emit('chat message', chatInput.value);
+                chatInput.value = '';
+            }
+        });
+
+        socket.on('user joined', (joinedUsername) => {
+            addMessage('System', `Welcome, ${joinedUsername}!`);
+        });
+
+        socket.on('chat message', (data) => {
+            addMessage(data.sender, data.message);
+        });
+
+        socket.on('user list', (users) => {
+            userList.innerHTML = '';
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = user;
+                userList.appendChild(li);
+            });
+        });
+
+        function addMessage(sender, message) {
+            const messageElem = document.createElement('p');
+            messageElem.textContent = `${sender}: ${message}`;
+            if (sender === 'System') {
+                messageElem.className = 'system-message';
+            } else if (sender === username) {
+                messageElem.className = 'user-message';
+            } else if (sender === 'Chatbot') {
+                messageElem.className = 'bot-message';
+            }
+            chatDiv.appendChild(messageElem);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>
