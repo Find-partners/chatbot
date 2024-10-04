@@ -14,6 +14,7 @@ const docClient = DynamoDBDocumentClient.from(dynamoDBClient); // Use DynamoDBDo
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
+
 //test
 const users = new Map();
 
@@ -64,7 +65,7 @@ io.on('connection', (socket) => {
   socket.on('chat message', (msg) => {
     const username = users.get(socket.id);
     console.log(`Message received from ${username}: ${msg}`);
-
+    //placeholder for individualChat logic
     const messageJson = createMessageJson(username, true, msg, '');
     console.log('Message JSON ready for DynamoDB:', JSON.stringify(messageJson, null, 2));
     uploadMessageToDynamoDB(messageJson);
