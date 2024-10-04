@@ -14,7 +14,7 @@ const docClient = DynamoDBDocumentClient.from(dynamoDBClient); // Use DynamoDBDo
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
-
+//test
 const users = new Map();
 
 // placeholder for message json creation
